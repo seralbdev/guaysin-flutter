@@ -21,12 +21,27 @@ class _SiteListPageState extends State<SiteListPage> {
 
   _SiteListPageState(this.crypto);
 
+  void _onAddNewSite(){
+
+  }
+
+  void _onTapOnSite(SiteData site){
+    print(site.siteName);
+  }
+
+  Widget _buildListItem(SiteData site){
+    return new ListTile(
+      title: new Text(site.siteName),
+      onTap: (){ _onTapOnSite(site);}
+    );
+  }
+
   Future<Widget> _buildSiteList() async {
     var allSites = await LocalStorage.get().getAllSites(crypto);
     var items = new List<Widget>();
 
     allSites.forEach((sd){
-      var lt = new ListTile(title: new Text(sd.siteName));
+      var lt = _buildListItem(sd);
       items.add(lt);
     });
 
@@ -55,8 +70,12 @@ class _SiteListPageState extends State<SiteListPage> {
         title: new Text('Site list'),
         automaticallyImplyLeading: false
       ),
-      body:fb
+      body:fb,
+      floatingActionButton: new FloatingActionButton(
+        onPressed: _onAddNewSite,
+        tooltip: 'Increment',
+        child: new Icon(Icons.add)
+      )
       );
   }
-
 }
