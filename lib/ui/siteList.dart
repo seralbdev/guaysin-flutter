@@ -21,8 +21,11 @@ class _SiteListPageState extends State<SiteListPage> {
 
   _SiteListPageState(this.crypto);
 
-  void _onAddNewSite(){
-
+  void _onAddNewSite() async {
+    var localStorage = LocalStorage.get();
+    var sd = new SiteData('site1','user1','url1','pwd1');
+    await localStorage.saveSite(sd);
+    this.setState((){});
   }
 
   void _onTapOnSite(SiteData site){
@@ -37,7 +40,7 @@ class _SiteListPageState extends State<SiteListPage> {
   }
 
   Future<Widget> _buildSiteList() async {
-    var allSites = await LocalStorage.get().getAllSites(crypto);
+    var allSites = await LocalStorage.get().getAllSites();
     var items = new List<Widget>();
 
     allSites.forEach((sd){

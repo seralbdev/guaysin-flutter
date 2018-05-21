@@ -67,11 +67,11 @@ class _LoginPageState extends State<LoginPage> {
     try{
       //Prepare local storage
       var localStorage = LocalStorage.get();
-      await localStorage.init();
+      await localStorage.init(cs);
       //debug
-      var sd = new SiteData('site1','user1','url1','pwd1');
-      var esd = await sd.encrypt(cs);
-      await localStorage.saveSite(esd);
+      //var sd = new SiteData('site1','user1','url1','pwd1');
+      //var esd = await sd.encrypt(cs);
+      //await localStorage.saveSite(esd);
     }catch(e){
       _showErrorMessage("Problem handling local storage");
       return false;
