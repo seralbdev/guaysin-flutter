@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:guaysin/services/cryptoServices.dart';
 import 'package:guaysin/services/localStorage.dart';
 import 'package:guaysin/services/siteData.dart';
+import 'package:guaysin/ui/siteEditorPage.dart';
 
 class SiteListPage extends StatefulWidget{ 
   @override
@@ -30,6 +31,12 @@ class _SiteListPageState extends State<SiteListPage> {
 
   void _onTapOnSite(SiteData site){
     print(site.siteName);
+
+    Navigator.push(
+      context,
+      new MaterialPageRoute(builder: (context) => new SiteEditorPage(site)),
+    );
+
   }
 
   Widget _buildListItem(SiteData site){
