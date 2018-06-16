@@ -30,7 +30,7 @@ class LocalStorage {
         // When creating the db, create the table
         await db.execute(
             "CREATE TABLE Sites ("
-                "SiteId STRING PRIMARY KEY,"
+                "SiteId INTEGER PRIMARY KEY,"
                 "SiteName TEXT,"
                 "SiteUrl TEXT,"
                 "SiteUser TEXT,"
@@ -49,7 +49,7 @@ class LocalStorage {
       esite = await site.encrypt(_crypto);
       esite.siteId = await db.rawInsert(sentence,[esite.siteName,esite.siteUrl,esite.siteUser,esite.sitePassword,ts]);
     }else{
-      sentence = 'UPDATE Sites SET SiteName=?,SiteUrl=?,SiteUser=?,SitePassword=?,TimeStamp=? WHERE Id=?;';
+      sentence = 'UPDATE Sites SET SiteName=?,SiteUrl=?,SiteUser=?,SitePassword=?,TimeStamp=? WHERE SiteId=?;';
       esite = await site.encrypt(_crypto);
       esite.siteId = await db.rawUpdate(sentence,[esite.siteName,esite.siteUrl,esite.siteUser,esite.sitePassword,ts,esite.siteId]);
     }
