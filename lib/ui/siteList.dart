@@ -18,6 +18,8 @@ class _SiteListPageState extends State<SiteListPage> {
 
   final List<SiteData> _siteList = <SiteData>[];
   final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
+  final _filterController = new TextEditingController();
+  RegExp regexp = new RegExp("");
   CryptoServiceOperation crypto; 
 
   _SiteListPageState(this.crypto);
@@ -56,8 +58,11 @@ class _SiteListPageState extends State<SiteListPage> {
     var items = new List<Widget>();
 
     allSites.forEach((sd){
-      var lt = _buildListItem(sd);
-      items.add(lt);
+      if(regexp.hasMatch(sd.siteName)){
+        var lt = _buildListItem(sd);
+        items.add(lt);
+      }
+
     });
 
     var lv = new ListView(
@@ -68,6 +73,11 @@ class _SiteListPageState extends State<SiteListPage> {
     return lv;
   }
 
+  void onFilter(){
+    regexp = new RegExp(_filterController.text);
+    this.setState((){});
+  }
+
   @override
   Widget build(BuildContext context) {
     
@@ -75,7 +85,39 @@ class _SiteListPageState extends State<SiteListPage> {
       future: _buildSiteList(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData && snapshot.data != null) {
-          return snapshot.data;
+
+            return new Column(
+                children: <Widget>[
+                  new Row(
+                      children: <Widget>[
+                        new RaisedButton(key:null, onPressed:onFilter,
+                            color: const Color(0xFFe0e0e0),
+                            child:
+                            new Text(
+                              "Filter",
+                              style: new TextStyle(fontSize:12.0,
+                                  color: const Color(0xFF000000),
+                                  fontWeight: FontWeight.w200,
+                                  fontFamily: "Roboto"),
+                            )
+                        ),
+                        new Flexible(
+                          child:new TextField(
+                            controller:_filterController,
+                            style: new TextStyle(fontSize:12.0,
+                            color: const Color(0xFF000000),
+                            fontWeight: FontWeight.w200,
+                            fontFamily: "Roboto"),
+                          )
+                        )
+                      ]
+                  ),
+                  new Expanded(child:
+                    snapshot.data
+                  )
+                ]);
+
+            //snapshot.data
         }
         return new Container();
       });
