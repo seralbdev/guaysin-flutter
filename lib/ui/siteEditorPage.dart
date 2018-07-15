@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:guaysin/services/localStorage.dart';
 import 'package:guaysin/services/siteData.dart';
 
+enum PageMenuOptions { DELETE }
+
 class SiteEditorPage extends StatefulWidget {
   final SiteData site;
 
@@ -47,15 +49,33 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
     site.siteUser = _siteUserController.text;
     site.sitePassword = _sitePwdController.text;
     await localStorage.saveSite(site);
-    this.setState((){});
+    //this.setState((){});
+    Navigator.pop(context);
+  }
+
+  void deleteSite(){
+    if(site.siteId!=null){
+      var localStorage = LocalStorage.get();
+      localStorage.deleteSite(site);
+      Navigator.pop(context);
+    }
+  }
+
+  void popupMenuSelected(PageMenuOptions valueSelected){
+    switch(valueSelected){
+      case PageMenuOptions.DELETE:
+        deleteSite();
+    }
   }
 
   @override
   void initState() {
-    _siteNameController.text = site.siteName;
-    _siteUrlController.text = site.siteUrl;
-    _siteUserController.text = site.siteUser;
-    _sitePwdController.text = site.sitePassword;
+    if(site!=null) {
+      _siteNameController.text = site.siteName;
+      _siteUrlController.text = site.siteUrl;
+      _siteUserController.text = site.siteUser;
+      _sitePwdController.text = site.sitePassword;
+    }
     return super.initState();
   }
 
@@ -65,7 +85,19 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
     final DateTime today = new DateTime.now();
 
     return new Scaffold(
-        appBar: new AppBar(title: const Text('Edit Site')),
+        appBar: new AppBar(title: const Text('Edit Site'),
+        actions: <Widget>[
+          // overflow menu
+          PopupMenuButton<PageMenuOptions>(
+            onSelected: popupMenuSelected,
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<PageMenuOptions>>[
+              const PopupMenuItem<PageMenuOptions>(
+                value: PageMenuOptions.DELETE,
+                child: const Text('Delete'),
+              ),
+            ]
+          ),
+        ]),
         body: new Form(
             key: _formKey,
             autovalidate: false,
@@ -78,9 +110,9 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
                     decoration: const InputDecoration(labelText: "Site Name", hintText: "Site name?"),
                     autocorrect: false,
                     controller: _siteNameController,
-                    onChanged: (String value) {
-                      _siteNameController.text = value;
-                    },
+                    //onChanged: (String value) {
+                    //  _siteNameController.text = value;
+                    //},
                   ),
                 ),
                 new Container(
@@ -88,9 +120,9 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
                     decoration: const InputDecoration(labelText: "Site URL", hintText: "Site url?"),
                     autocorrect: false,
                     controller: _siteUrlController,
-                    onChanged: (String value) {
-                      _siteUrlController.text = value;
-                    },
+                    //onChanged: (String value) {
+                    //  _siteUrlController.text = value;
+                    //},
                   ),
                 ),
                 new Container(
@@ -98,9 +130,9 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
                     decoration: const InputDecoration(labelText: "Site User", hintText: "Site user?"),
                     autocorrect: false,
                     controller: _siteUserController,
-                    onChanged: (String value) {
-                      _siteUserController.text = value;
-                    },
+                    //onChanged: (String value) {
+                    //  _siteUserController.text = value;
+                    //},
                   ),
                 ),
                 new Container(
@@ -108,9 +140,9 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
                     decoration: const InputDecoration(labelText: "Site password", hintText: "Site password?"),
                     autocorrect: false,
                     controller: _sitePwdController,
-                    onChanged: (String value) {
-                      _sitePwdController.text = value;
-                    },
+                    //onChanged: (String value) {
+                    //  _sitePwdController.text = value;
+                    //},
                   ),
                 ),
               ],

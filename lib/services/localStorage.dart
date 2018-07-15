@@ -57,7 +57,7 @@ class LocalStorage {
   }
 
   Future deleteSite(SiteData site) async {
-    String sentence = 'DELETE FROM Sites WHERE Id=?;';
+    String sentence = 'DELETE FROM Sites WHERE SiteId=?;';
     await db.rawDelete(sentence,[site.siteId]);
   }
 

@@ -24,9 +24,14 @@ class _SiteListPageState extends State<SiteListPage> {
 
   void _onAddNewSite() async {
     var localStorage = LocalStorage.get();
-    var sd = new SiteData('site1','user1','url1','pwd1');
-    await localStorage.saveSite(sd);
-    this.setState((){});
+    var sd = new SiteData('','','','');
+    //await localStorage.saveSite(sd);
+    //this.setState((){});
+
+    Navigator.push(
+      context,
+      new MaterialPageRoute(builder: (context) => new SiteEditorPage(sd)),
+    );
   }
 
   void _onTapOnSite(SiteData site){
