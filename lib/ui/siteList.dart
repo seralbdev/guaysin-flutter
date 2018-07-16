@@ -6,6 +6,10 @@ import 'package:guaysin/services/cryptoServices.dart';
 import 'package:guaysin/services/localStorage.dart';
 import 'package:guaysin/services/siteData.dart';
 import 'package:guaysin/ui/siteEditorPage.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+enum _PageMenuOptions { EXPORT_TO_CLOUD }
 
 class SiteListPage extends StatefulWidget{ 
   @override
@@ -78,6 +82,35 @@ class _SiteListPageState extends State<SiteListPage> {
     this.setState((){});
   }
 
+  void exportToCloud() async {
+
+    String CLOUD_BACKEND_PUSH_URL = "https://guaysinbackend1.azurewebsites.net/api/PushSites?code=8wgbzg4wovpMM9iLNgH96ApcK2YRi8nKwxj6OQag5EoHW6CwUkkVoQ==";
+
+    var allSites = await LocalStorage.get().getAllSites();
+    var siteMapList = new List<Map<String,dynamic>>();
+    allSites.forEach((sd){
+      var jsonSite = sd.toJSON();
+      siteMapList.add(jsonSite);
+    });
+
+    var secret = "secret";
+
+    var response = await http.post(CLOUD_BACKEND_PUSH_URL,
+      headers: {'Token':'token1','MasterS':secret,'Content-Type':'application/json'}, 
+        body:json.encode(siteMapList)
+    );
+
+    print(response.statusCode);
+
+  }
+
+  void popupMenuSelected(_PageMenuOptions valueSelected){
+    switch(valueSelected){
+      case _PageMenuOptions.EXPORT_TO_CLOUD:
+        exportToCloud();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     
@@ -125,8 +158,19 @@ class _SiteListPageState extends State<SiteListPage> {
     return new Scaffold(
       appBar: new AppBar(
         title: new Text('Site list'),
-        automaticallyImplyLeading: false
-      ),
+        automaticallyImplyLeading: false,
+        actions: <Widget>[
+          // overflow menu
+          PopupMenuButton<_PageMenuOptions>(
+              onSelected: popupMenuSelected,
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<_PageMenuOptions>>[
+                const PopupMenuItem<_PageMenuOptions>(
+                  value: _PageMenuOptions.EXPORT_TO_CLOUD,
+                  child: const Text('ToCloud'),
+                ),
+              ]
+          ),
+        ]),
       body:fb,
       floatingActionButton: new FloatingActionButton(
         onPressed: _onAddNewSite,

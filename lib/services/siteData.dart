@@ -37,4 +37,11 @@ class SiteData{
     return new SiteData(name,url,user,pwd,siteId);
   }
 
+  Map<String,dynamic> toJSON() => {
+    'SiteName': siteName,
+    'SiteUrl':siteUrl,
+    'SiteUser':siteUser,
+    'SitePassword':sitePassword
+  };
+
 }
