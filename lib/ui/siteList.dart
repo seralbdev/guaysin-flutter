@@ -24,7 +24,8 @@ class _SiteListPageState extends State<SiteListPage> {
   final TextStyle _biggerFont = const TextStyle(fontSize: 18.0);
   final _filterController = new TextEditingController();
   RegExp regexp = new RegExp("");
-  CryptoServiceOperation crypto; 
+  CryptoService crypto;
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   _SiteListPageState(this.crypto);
 
@@ -85,22 +86,32 @@ class _SiteListPageState extends State<SiteListPage> {
   void exportToCloud() async {
 
     String CLOUD_BACKEND_PUSH_URL = "https://guaysinbackend1.azurewebsites.net/api/PushSites?code=8wgbzg4wovpMM9iLNgH96ApcK2YRi8nKwxj6OQag5EoHW6CwUkkVoQ==";
+    var msg;
 
-    var allSites = await LocalStorage.get().getAllSites();
-    var siteMapList = new List<Map<String,dynamic>>();
-    allSites.forEach((sd){
-      var jsonSite = sd.toJSON();
-      siteMapList.add(jsonSite);
-    });
+    try{
+      var allSites = await LocalStorage.get().getAllSites();
+      var siteMapList = new List<Map<String,dynamic>>();
+      allSites.forEach((sd){
+        var jsonSite = sd.toJSON();
+        siteMapList.add(jsonSite);
+      });
 
-    var secret = "secret";
+      var secret = crypto.getSecretBundle();
 
-    var response = await http.post(CLOUD_BACKEND_PUSH_URL,
-      headers: {'Token':'token1','MasterS':secret,'Content-Type':'application/json'}, 
-        body:json.encode(siteMapList)
-    );
+      var response = await http.post(CLOUD_BACKEND_PUSH_URL,
+          headers: {'Token':'token1','MasterS':secret,'Content-Type':'application/json'},
+          body:json.encode(siteMapList)
+      );
 
-    print(response.statusCode);
+      msg = "Operation succeeded";
+
+    }catch(ex){
+      msg = "Operation failed!";
+    }
+
+    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+      content: new Text(msg),
+    ));
 
   }
 
@@ -156,6 +167,7 @@ class _SiteListPageState extends State<SiteListPage> {
       });
 
     return new Scaffold(
+      key:_scaffoldKey,
       appBar: new AppBar(
         title: new Text('Site list'),
         automaticallyImplyLeading: false,

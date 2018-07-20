@@ -12,6 +12,8 @@ abstract class CryptoServiceConfiguration {
   Future<bool> secretReady();
   Future<bool> createSecret(String password);
   Future<bool> unblockSecret(String password);
+  String getSecretBundle();
+  void setSecretBundle(String bundle);
 }
 
 abstract class CryptoServiceOperation {
@@ -24,11 +26,22 @@ abstract class CryptoService implements CryptoServiceConfiguration,CryptoService
 
 class DefaultCryptoService implements CryptoService {
   final _SALT_ID = "SALT";
-  final _PWD_ID = "PWD";
+  final _SECRET_ID = "SECRET";
   final _cryptor = new PlatformStringCryptor();
   final _sstorage = new FlutterSecureStorage();
-  String _salt;
   String _key;
+  String _salt;
+  String _esecret;
+
+  String getSecretBundle(){
+    return _salt+"&"+_esecret;
+  }
+
+  void setSecretBundle(String bundle){
+    var tokens = bundle.split("&");
+    _salt = tokens[0];
+    _esecret = tokens[1];
+  }
 
   Future<bool> secretReady() async {
     try{
@@ -45,9 +58,9 @@ class DefaultCryptoService implements CryptoService {
     try{
       _salt = await _cryptor.generateSalt();
       _key = await _cryptor.generateKeyFromPassword(password,_salt);
-      final epwd = await _cryptor.encrypt(password,_key);   
+      _esecret = await _cryptor.encrypt(_salt,_key);
       await _sstorage.write(key:_SALT_ID,value:_salt);
-      await _sstorage.write(key:_PWD_ID,value:epwd);
+      await _sstorage.write(key:_SECRET_ID,value:_esecret);
       return true;
     }catch(e){
       return false;
@@ -56,11 +69,11 @@ class DefaultCryptoService implements CryptoService {
 
   Future<bool> unblockSecret(String password) async {
     try{
-      final _salt = await _sstorage.read(key:_SALT_ID);
+      _salt = await _sstorage.read(key:_SALT_ID);
       _key = await _cryptor.generateKeyFromPassword(password,_salt);
-      final epwd = await _sstorage.read(key:_PWD_ID);
-      final pwd = await _cryptor.decrypt(epwd,_key);
-      if(pwd==password)
+      _esecret = await _sstorage.read(key:_SECRET_ID);
+      final secret = await _cryptor.decrypt(_esecret,_key);
+      if(secret==_salt)
         return true;
       return false;
     }catch(e){
