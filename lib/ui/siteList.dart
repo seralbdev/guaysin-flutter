@@ -5,10 +5,11 @@ import 'package:flutter/widgets.dart';
 import 'package:guaysin/services/cryptoServices.dart';
 import 'package:guaysin/services/localStorage.dart';
 import 'package:guaysin/services/siteData.dart';
+import 'package:guaysin/ui/loginPage.dart';
 import 'package:guaysin/ui/siteEditorPage.dart';
 import 'package:guaysin/services/cloudStorage.dart' as cloud;
 
-enum _PageMenuOptions { EXPORT_TO_CLOUD }
+enum _PageMenuOptions { EXPORT_TO_CLOUD,IMPORT_FROM_CLOUD }
 
 class SiteListPage extends StatefulWidget{ 
   @override
@@ -95,10 +96,29 @@ class _SiteListPageState extends State<SiteListPage> {
 
   }
 
+  void importFromCloud() async {
+    var result = await cloud.importFromCloud();
+
+    if(!result){
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+        content: new Text("Operation FAILED!"),
+      ));
+    }else{
+      Navigator.push(
+        context,
+        new MaterialPageRoute(builder: (context) => new LoginPage()),
+      );
+    }
+  }
+
   void popupMenuSelected(_PageMenuOptions valueSelected){
     switch(valueSelected){
       case _PageMenuOptions.EXPORT_TO_CLOUD:
         exportToCloud();
+        break;
+      case _PageMenuOptions.IMPORT_FROM_CLOUD:
+        importFromCloud();
+        break;
     }
   }
 
@@ -159,6 +179,10 @@ class _SiteListPageState extends State<SiteListPage> {
                 const PopupMenuItem<_PageMenuOptions>(
                   value: _PageMenuOptions.EXPORT_TO_CLOUD,
                   child: const Text('ToCloud'),
+                ),
+                const PopupMenuItem<_PageMenuOptions>(
+                  value: _PageMenuOptions.IMPORT_FROM_CLOUD,
+                  child: const Text('FromCloud'),
                 ),
               ]
           ),

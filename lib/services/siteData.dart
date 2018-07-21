@@ -29,6 +29,18 @@ class SiteData{
     return new SiteData(name,url,user,pwd,id);  
   }
 
+  static SiteData fromMap(Map data) {
+    final name = data[SITENAMEID];
+    final url = data[SITEURLID];
+    final user = data[SITEUSERID];
+    final pwd = data[SITEPASSWORDID];
+    var id;
+    if(data.containsKey(SITEID))
+      id = data[SITEID];
+
+    return new SiteData(name,url,user,pwd,id);
+  }
+
   Future<SiteData> encrypt(CryptoServiceOperation crypto) async {
     final name = await crypto.encryptData(siteName);
     final url = await crypto.encryptData(siteUrl);
@@ -44,4 +56,12 @@ class SiteData{
     'SitePassword':sitePassword
   };
 
+  Future<Map<String,dynamic>> toEncryptedJSON(CryptoServiceOperation crypto) async {
+    var map = new Map<String,dynamic>();
+    map['SiteName'] = await crypto.encryptData(siteName);
+    map['SiteUrl'] = await crypto.encryptData(siteUrl);
+    map['SiteUser'] = await crypto.encryptData(siteUser);
+    map['SitePassword'] = await crypto.encryptData(sitePassword);
+    return map;
+  }
 }

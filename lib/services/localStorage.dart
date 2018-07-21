@@ -40,17 +40,23 @@ class LocalStorage {
       });
   }
 
-  Future<SiteData> saveSite(SiteData site) async {
+  Future<SiteData> saveSite(SiteData site,bool encrypt) async {
     SiteData esite;
     int ts = new DateTime.now().millisecondsSinceEpoch;
     String sentence;
     if(site.siteId==null){
       sentence = 'INSERT INTO Sites (SiteName, SiteUrl, SiteUser, SitePassword, TimeStamp) VALUES (?,?,?,?,?);';
-      esite = await site.encrypt(_crypto);
+      if(encrypt)
+        esite = await site.encrypt(_crypto);
+      else
+        esite = site;
       esite.siteId = await db.rawInsert(sentence,[esite.siteName,esite.siteUrl,esite.siteUser,esite.sitePassword,ts]);
     }else{
       sentence = 'UPDATE Sites SET SiteName=?,SiteUrl=?,SiteUser=?,SitePassword=?,TimeStamp=? WHERE SiteId=?;';
-      esite = await site.encrypt(_crypto);
+      if(encrypt)
+        esite = await site.encrypt(_crypto);
+      else
+        esite = site;
       esite.siteId = await db.rawUpdate(sentence,[esite.siteName,esite.siteUrl,esite.siteUser,esite.sitePassword,ts,esite.siteId]);
     }
     return esite;
@@ -59,6 +65,11 @@ class LocalStorage {
   Future deleteSite(SiteData site) async {
     String sentence = 'DELETE FROM Sites WHERE SiteId=?;';
     await db.rawDelete(sentence,[site.siteId]);
+  }
+
+  Future cleanSites() async {
+    String sentence = 'DELETE FROM Sites';
+    await db.rawDelete(sentence);
   }
 
   Future<List<SiteData>> getAllSites() async {

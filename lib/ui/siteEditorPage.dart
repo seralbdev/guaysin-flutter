@@ -48,7 +48,7 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
     site.siteUrl = _siteUrlController.text;
     site.siteUser = _siteUserController.text;
     site.sitePassword = _sitePwdController.text;
-    await localStorage.saveSite(site);
+    await localStorage.saveSite(site,true);
     //this.setState((){});
     Navigator.pop(context);
   }

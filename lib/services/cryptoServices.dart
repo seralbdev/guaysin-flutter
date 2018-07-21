@@ -37,10 +37,12 @@ class DefaultCryptoService implements CryptoService {
     return _salt+"&"+_esecret;
   }
 
-  void setSecretBundle(String bundle){
+  void setSecretBundle(String bundle) async {
     var tokens = bundle.split("&");
     _salt = tokens[0];
     _esecret = tokens[1];
+    await _sstorage.write(key:_SALT_ID,value:_salt);
+    await _sstorage.write(key:_SECRET_ID,value:_esecret);
   }
 
   Future<bool> secretReady() async {
