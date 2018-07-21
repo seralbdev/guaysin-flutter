@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:guaysin/services/cryptoServices.dart';
-import 'package:guaysin/services/siteData.dart';
 import 'package:guaysin/ui/siteList.dart';
 import 'package:guaysin/services/localStorage.dart';
+import 'package:guaysin/services/preferences.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -18,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool _secretReady;
   String _password;
+  String _token;
 
   @override
   void initState(){
@@ -58,6 +59,7 @@ class _LoginPageState extends State<LoginPage> {
         await cs.unblockSecret(_password);         
       }else{
         await cs.createSecret(_password);
+        await setUserToken(_token);
       }
     }catch(e){
       _showErrorMessage("Problem handling password");
@@ -68,13 +70,6 @@ class _LoginPageState extends State<LoginPage> {
       //Prepare local storage
       var localStorage = LocalStorage.get();
       await localStorage.init(cs);
-      //debug
-      /*var sd = new SiteData('site1','user1','url1','pwd1');
-      var esd = await sd.encrypt(cs);
-      await localStorage.saveSite(esd);
-      sd = new SiteData('site2','user2','url2','pwd2');
-      esd = await sd.encrypt(cs);
-      await localStorage.saveSite(esd);*/
 
     }catch(e){
       _showErrorMessage("Problem handling local storage");
@@ -105,13 +100,22 @@ class _LoginPageState extends State<LoginPage> {
                 onSaved: (val) => _password = val,
                 obscureText: true,
               ),
-              !_secretReady ? new TextFormField(
-                              decoration: new InputDecoration(labelText: 'Introduce PASSWORD again...'),
-                              validator: (val) =>
-                                  val.length < 6 ? 'Password too short.' : null,
-                              onSaved: (val) => _password = val,
-                              obscureText: true):new Container(width: 0.0, height: 0.0), 
-              new Container(
+              !_secretReady ?
+                  new Column(
+                  children: <Widget>[
+              new TextFormField(
+                decoration: new InputDecoration(labelText: 'Introduce PASSWORD again...'),
+                validator: (val) =>
+                val.length < 6 ? 'Password too short.' : null,
+                onSaved: (val) => _password = val,
+                obscureText: true),
+                new TextFormField(
+                  decoration: new InputDecoration(labelText: 'Introduce TOKEN here...'),
+                  validator: (val) =>
+                  val.isEmpty ? 'Must have a value' : null,
+                  onSaved: (val) => _token = val,
+                )]):new Container(width: 0.0, height: 0.0),
+              Container(
                 margin: const EdgeInsets.all(30.0),
                 child: new RaisedButton(
                   onPressed: _submit,
