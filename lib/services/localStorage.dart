@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:guaysin/services/cryptoServices.dart';
 import 'package:path/path.dart';
@@ -80,6 +81,52 @@ class LocalStorage {
       sites.add(site);
     }
     return sites;
+  }
+
+  Future exportDataToFile() async {
+
+    //get plain site list
+    final allSites = await getAllSites();
+
+    var siteMapList = new List<Map<String,dynamic>>();
+    for(final sd in allSites) {
+      final jsonSite = await sd.toJSON();
+      siteMapList.add(jsonSite);
+    }
+
+    //convert to JSON
+    final jdata = json.encode(siteMapList);
+
+    //get file handler to write
+    final dir = await getExternalStorageDirectory();
+    final path = dir.path;
+    final fileh = await File('$path/guaysindata.txt');
+
+    //write file
+    fileh.writeAsStringSync(jdata);
+  }
+
+  Future importDataFromFile() async {
+
+    //get file handler to read
+    final dir = await getExternalStorageDirectory();
+    final path = dir.path;
+    final fileh = await File('$path/guaysindata.txt');
+
+    //read file
+    var jsondata = await fileh.readAsString();
+
+    //Parse response body to get sites
+    List jsonSiteList = json.decode(jsondata);
+
+    await cleanSites();
+
+    for(var jsonSite in jsonSiteList){
+      //Save while encrypts
+      var site = await SiteData.fromMap(jsonSite);
+      await saveSite(site,true);
+    };
+
   }
 
 }

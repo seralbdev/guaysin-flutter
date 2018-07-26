@@ -9,7 +9,7 @@ import 'package:guaysin/ui/loginPage.dart';
 import 'package:guaysin/ui/siteEditorPage.dart';
 import 'package:guaysin/services/cloudStorage.dart' as cloud;
 
-enum _PageMenuOptions { EXPORT_TO_CLOUD,IMPORT_FROM_CLOUD }
+enum _PageMenuOptions { EXPORT_TO_CLOUD,IMPORT_FROM_CLOUD,EXPORT_TO_FILE,IMPORT_FROM_FILE }
 
 class SiteListPage extends StatefulWidget{ 
   @override
@@ -111,6 +111,38 @@ class _SiteListPageState extends State<SiteListPage> {
     }
   }
 
+  void exportToFile() async {
+
+    try{
+      var localStorage = LocalStorage.get();
+      await localStorage.exportDataToFile();
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+        content: new Text("Operation SUCCEEDED!"),
+      ));
+    }catch(ex){
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+        content: new Text("Operation FAILED!"),
+      ));
+    }
+  }
+
+  void importFromFile() async {
+    try {
+      var localStorage = LocalStorage.get();
+      await localStorage.importDataFromFile();
+
+      Navigator.push(
+        context,
+        new MaterialPageRoute(builder: (context) => new LoginPage()),
+      );
+
+    }catch(ex){
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+        content: new Text("Operation FAILED!"),
+      ));
+    }
+  }
+
   void popupMenuSelected(_PageMenuOptions valueSelected){
     switch(valueSelected){
       case _PageMenuOptions.EXPORT_TO_CLOUD:
@@ -118,6 +150,12 @@ class _SiteListPageState extends State<SiteListPage> {
         break;
       case _PageMenuOptions.IMPORT_FROM_CLOUD:
         importFromCloud();
+        break;
+      case _PageMenuOptions.EXPORT_TO_FILE:
+        exportToFile();
+        break;
+      case _PageMenuOptions.IMPORT_FROM_FILE:
+        importFromFile();
         break;
     }
   }
@@ -183,6 +221,14 @@ class _SiteListPageState extends State<SiteListPage> {
                 const PopupMenuItem<_PageMenuOptions>(
                   value: _PageMenuOptions.IMPORT_FROM_CLOUD,
                   child: const Text('FromCloud'),
+                ),
+                const PopupMenuItem<_PageMenuOptions>(
+                  value: _PageMenuOptions.EXPORT_TO_FILE,
+                  child: const Text('ToFile'),
+                ),
+                const PopupMenuItem<_PageMenuOptions>(
+                  value: _PageMenuOptions.IMPORT_FROM_FILE,
+                  child: const Text('FromFile'),
                 ),
               ]
           ),
