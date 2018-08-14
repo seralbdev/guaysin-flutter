@@ -58,11 +58,11 @@ class _LoginPageState extends State<LoginPage> {
       //Handle secret
       cs = getCryptoServiceInstance();
       if(_secretReady){      
-        return await cs.unblockSecret(_password);
+        if(!await cs.unblockSecret(_password))
+          return false;
       }else{
         await cs.createSecret(_password);
         await setUserToken(_token);
-        return true;
       }
     }catch(e){
       _showErrorMessage("Problem handling password");

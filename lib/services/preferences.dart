@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const String _USER_TOKEN_ID = "USER_TOKEN";
 
-void setUserToken(String value) async {
+Future setUserToken(String value) async {
   SharedPreferences sp  = await SharedPreferences.getInstance();
   await sp.setString(_USER_TOKEN_ID, value);
 }
