@@ -187,6 +187,8 @@ class _SiteListPageState extends State<SiteListPage> {
             ]);
 
             //snapshot.data
+          }else if(!snapshot.hasData){
+            return new Center(child: new CircularProgressIndicator());
           }
           return new Container();
         });

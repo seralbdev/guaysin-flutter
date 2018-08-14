@@ -21,12 +21,12 @@ class _LoginPageState extends State<LoginPage> {
   String _token;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
 
     getCryptoServiceInstance().secretReady().then((flag) {
       setState(() {
-        _secretReady = flag;        
+        _secretReady = flag;
       });
     });
   }
@@ -41,12 +41,12 @@ class _LoginPageState extends State<LoginPage> {
     if (form.validate()) {
       form.save();
       var res = await _performLogin();
-      if(res){
+      if (res) {
         Navigator.push(
           context,
           new MaterialPageRoute(builder: (context) => new SiteListPage()),
         );
-      }else{
+      } else {
         _showErrorMessage("Wrong password");
       }
     }
@@ -54,80 +54,73 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<bool> _performLogin() async {
     var cs;
-    try{    
+    try {
       //Handle secret
       cs = getCryptoServiceInstance();
-      if(_secretReady){      
-        if(!await cs.unblockSecret(_password))
-          return false;
-      }else{
+      if (_secretReady) {
+        if (!await cs.unblockSecret(_password)) return false;
+      } else {
         await cs.createSecret(_password);
         await setUserToken(_token);
       }
-    }catch(e){
+    } catch (e) {
       _showErrorMessage("Problem handling password");
       return false;
-    }  
+    }
 
-    try{
+    try {
       //Prepare local storage
       var localStorage = LocalStorage.get();
       await localStorage.init(cs);
-
-    }catch(e){
+    } catch (e) {
       _showErrorMessage("Problem handling local storage");
       return false;
     }
 
-    return true;  
+    return true;
   }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      key: scaffoldKey,
-      appBar: new AppBar(
-        title: new Text('Login page'),
-        automaticallyImplyLeading: false
-      ),
-      body: new Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: new Form(
-          key: formKey,
-          child: new Column(
-            children: [
-              new TextFormField(
-                decoration: new InputDecoration(labelText: 'Introduce PASSWORD here...'),
-                validator: (val) =>
-                    val.length < 6 ? 'Password too short.' : null,
-                onSaved: (val) => _password = val,
-                obscureText: true,
-              ),
-              !_secretReady ?
-                  new Column(
-                  children: <Widget>[
-              new TextFormField(
-                decoration: new InputDecoration(labelText: 'Introduce PASSWORD again...'),
-                validator: (val) =>
-                val.length < 6 ? 'Password too short.' : null,
-                onSaved: (val) => _password = val,
-                obscureText: true),
-                new TextFormField(
-                  decoration: new InputDecoration(labelText: 'Introduce TOKEN here...'),
-                  validator: (val) =>
-                  val.isEmpty ? 'Must have a value' : null,
-                  onSaved: (val) => _token = val,
-                )]):new Container(width: 0.0, height: 0.0),
-              Container(
-                margin: const EdgeInsets.all(30.0),
-                child: new RaisedButton(
-                  onPressed: _submit,
-                  child: new Text('Login')
-                )
-              )]
-            )
-          )
-        )
-      );
+        key: scaffoldKey,
+        appBar: new AppBar(
+            title: new Text('Login page'), automaticallyImplyLeading: false),
+        body: new Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: new Form(
+                key: formKey,
+                child: new Column(children: [
+                  new TextFormField(
+                    decoration: new InputDecoration(
+                        labelText: 'Introduce PASSWORD here...'),
+                    validator: (val) =>
+                        val.length < 6 ? 'Password too short.' : null,
+                    onSaved: (val) => _password = val,
+                    obscureText: true,
+                  ),
+                  !_secretReady
+                      ? new Column(children: <Widget>[
+                          new TextFormField(
+                              decoration: new InputDecoration(
+                                  labelText: 'Introduce PASSWORD again...'),
+                              validator: (val) =>
+                                  val.length < 6 ? 'Password too short.' : null,
+                              onSaved: (val) => _password = val,
+                              obscureText: true),
+                          new TextFormField(
+                            decoration: new InputDecoration(
+                                labelText: 'Introduce TOKEN here...'),
+                            validator: (val) =>
+                                val.isEmpty ? 'Must have a value' : null,
+                            onSaved: (val) => _token = val,
+                          )
+                        ])
+                      : new Container(width: 0.0, height: 0.0),
+                  Container(
+                      margin: const EdgeInsets.all(30.0),
+                      child: new RaisedButton(
+                          onPressed: _submit, child: new Text('Login')))
+                ]))));
   }
 }
