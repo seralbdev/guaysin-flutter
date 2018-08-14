@@ -45,7 +45,9 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.push(
           context,
           new MaterialPageRoute(builder: (context) => new SiteListPage()),
-        ); 
+        );
+      }else{
+        _showErrorMessage("Wrong password");
       }
     }
   }
@@ -56,10 +58,11 @@ class _LoginPageState extends State<LoginPage> {
       //Handle secret
       cs = getCryptoServiceInstance();
       if(_secretReady){      
-        await cs.unblockSecret(_password);         
+        return await cs.unblockSecret(_password);
       }else{
         await cs.createSecret(_password);
         await setUserToken(_token);
+        return true;
       }
     }catch(e){
       _showErrorMessage("Problem handling password");
