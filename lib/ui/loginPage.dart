@@ -80,6 +80,24 @@ class _LoginPageState extends State<LoginPage> {
     return true;
   }
 
+  void _fingerPrintLogin() async {
+    var cs;
+    try {
+      //Handle secret
+      cs = getCryptoServiceInstance();
+      if (await cs.unblockKey()) {
+        var localStorage = LocalStorage.get();
+        await localStorage.init(cs);
+        Navigator.push(context,
+            new MaterialPageRoute(builder: (context) => new SiteListPage()));
+      } else {
+        _showErrorMessage("Problem unblocking key");
+      }
+    } catch (e) {
+      _showErrorMessage("Generic error");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -114,13 +132,25 @@ class _LoginPageState extends State<LoginPage> {
                             validator: (val) =>
                                 val.isEmpty ? 'Must have a value' : null,
                             onSaved: (val) => _token = val,
-                          )
+                          ),
+                          new Container(
+                              margin: const EdgeInsets.all(30.0),
+                              child: new RaisedButton(
+                                  onPressed: _submit,
+                                  child: new Text('Start')))
                         ])
-                      : new Container(width: 0.0, height: 0.0),
-                  Container(
-                      margin: const EdgeInsets.all(30.0),
-                      child: new RaisedButton(
-                          onPressed: _submit, child: new Text('Login')))
+                      : new Column(children: <Widget>[
+                          new Container(
+                              margin: const EdgeInsets.all(30.0),
+                              child: new RaisedButton(
+                                  onPressed: _submit,
+                                  child: new Text('Login'))),
+                          new Container(
+                              margin: const EdgeInsets.all(60.0),
+                              child: new RaisedButton(
+                                  onPressed: _fingerPrintLogin,
+                                  child: new Icon(Icons.fingerprint)))
+                        ])
                 ]))));
   }
 }

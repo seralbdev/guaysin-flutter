@@ -27,6 +27,7 @@ abstract class CryptoService implements CryptoServiceConfiguration,CryptoService
 class DefaultCryptoService implements CryptoService {
   final _SALT_ID = "SALT";
   final _SECRET_ID = "SECRET";
+  final _KEY_ID = "KEY";
   final _cryptor = new PlatformStringCryptor();
   final _sstorage = new FlutterSecureStorage();
   String _key;
@@ -63,6 +64,8 @@ class DefaultCryptoService implements CryptoService {
       _esecret = await _cryptor.encrypt(_salt,_key);
       await _sstorage.write(key:_SALT_ID,value:_salt);
       await _sstorage.write(key:_SECRET_ID,value:_esecret);
+      //TODO:Only if figerprint enabled
+      await _sstorage.write(key:_KEY_ID,value:_key);
       return true;
     }catch(e){
       return false;
@@ -82,6 +85,18 @@ class DefaultCryptoService implements CryptoService {
       return false;
     }
   }
+
+  Future<bool> unblockKey() async {
+    try{
+      _salt = await _sstorage.read(key:_SALT_ID);
+      _esecret = await _sstorage.read(key:_SECRET_ID);
+      _key = await _sstorage.read(key:_KEY_ID);
+        return true;
+    }catch(e){
+      return false;
+    }
+  }
+
 
   Future<String> encryptData(String data) async {
     if(_key != null && _key.isNotEmpty){
