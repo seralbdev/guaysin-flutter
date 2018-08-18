@@ -6,6 +6,7 @@ import 'package:guaysin/services/cryptoServices.dart';
 import 'package:guaysin/ui/siteList.dart';
 import 'package:guaysin/services/localStorage.dart';
 import 'package:guaysin/services/preferences.dart';
+import 'package:local_auth/local_auth.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -58,7 +59,9 @@ class _LoginPageState extends State<LoginPage> {
       //Handle secret
       cs = getCryptoServiceInstance();
       if (_secretReady) {
-        if (!await cs.unblockSecret(_password)) return false;
+        final flag = await getGenerateKeyFlag();
+        if (!await cs.unblockSecret(_password,flag)) return false;
+        setGenerateKeyFlag(false);
       } else {
         await cs.createSecret(_password);
         await setUserToken(_token);
@@ -83,6 +86,15 @@ class _LoginPageState extends State<LoginPage> {
   void _fingerPrintLogin() async {
     var cs;
     try {
+
+      var localAuth = new LocalAuthentication();
+      bool didAuthenticate = await localAuth.authenticateWithBiometrics(
+          localizedReason: 'Please authenticate');
+
+      if(!didAuthenticate){
+        return;
+      }
+
       //Handle secret
       cs = getCryptoServiceInstance();
       if (await cs.unblockKey()) {

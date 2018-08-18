@@ -11,7 +11,7 @@ CryptoService getCryptoServiceInstance(){
 abstract class CryptoServiceConfiguration {
   Future<bool> secretReady();
   Future<bool> createSecret(String password);
-  Future<bool> unblockSecret(String password);
+  Future<bool> unblockSecret(String password,bool generateAndPersistKey);
   String getSecretBundle();
   void setSecretBundle(String bundle);
 }
@@ -72,10 +72,15 @@ class DefaultCryptoService implements CryptoService {
     }
   }
 
-  Future<bool> unblockSecret(String password) async {
+  Future<bool> unblockSecret(String password,bool generateAndPersistKey) async {
     try{
       _salt = await _sstorage.read(key:_SALT_ID);
-      _key = await _cryptor.generateKeyFromPassword(password,_salt);
+      if(generateAndPersistKey){
+        _key = await _cryptor.generateKeyFromPassword(password,_salt);
+        await _sstorage.write(key:_KEY_ID,value:_key);
+      }else {
+        _key = await _cryptor.generateKeyFromPassword(password, _salt);
+      }
       _esecret = await _sstorage.read(key:_SECRET_ID);
       final secret = await _cryptor.decrypt(_esecret,_key);
       if(secret==_salt)

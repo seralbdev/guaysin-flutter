@@ -8,6 +8,7 @@ import 'package:guaysin/services/siteData.dart';
 import 'package:guaysin/ui/loginPage.dart';
 import 'package:guaysin/ui/siteEditorPage.dart';
 import 'package:guaysin/services/cloudStorage.dart' as cloud;
+import 'package:guaysin/services/preferences.dart';
 
 enum _PageMenuOptions {
   EXPORT_TO_CLOUD,
@@ -63,7 +64,8 @@ class _SiteListPageState extends State<SiteListPage> {
   }
 
   Future<Widget> _buildSiteList() async {
-    var allSites = await LocalStorage.get().getAllSites();
+    final ls = LocalStorage.get();
+    var allSites = await ls.getAllSites();
     var items = new List<Widget>();
 
     allSites.forEach((sd) {
@@ -98,7 +100,7 @@ class _SiteListPageState extends State<SiteListPage> {
 
   void importFromCloud() async {
     var result = await cloud.importFromCloud();
-
+    setGenerateKeyFlag(true);
     if (!result) {
       _scaffoldKey.currentState.showSnackBar(new SnackBar(
         content: new Text("Operation FAILED!"),
