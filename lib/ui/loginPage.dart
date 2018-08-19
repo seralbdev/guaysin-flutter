@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
-    getCryptoServiceInstance().secretReady().then((flag) {
+    getCryptoService().secretReady().then((flag) {
       setState(() {
         _secretReady = flag;
       });
@@ -57,14 +57,12 @@ class _LoginPageState extends State<LoginPage> {
     var cs;
     try {
       //Handle secret
-      cs = getCryptoServiceInstance();
+      cs = getCryptoService();
       if (_secretReady) {
-        final flag = await getGenerateKeyFlag();
-        if (!await cs.unblockSecret(_password,flag)) return false;
-        setGenerateKeyFlag(false);
+        if (!await cs.unblockSecret(_password)) return false;
       } else {
         await cs.createSecret(_password);
-        await setUserToken(_token);
+        await getPreferences().setUserToken(_token);
       }
     } catch (e) {
       _showErrorMessage("Problem handling password");
@@ -73,8 +71,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       //Prepare local storage
-      var localStorage = LocalStorage.get();
-      await localStorage.init(cs);
+      await initLocalStorage(cs);
     } catch (e) {
       _showErrorMessage("Problem handling local storage");
       return false;
@@ -84,7 +81,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _fingerPrintLogin() async {
-    var cs;
     try {
 
       var localAuth = new LocalAuthentication();
@@ -96,10 +92,10 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       //Handle secret
-      cs = getCryptoServiceInstance();
+      final cs = getCryptoService();
       if (await cs.unblockKey()) {
-        var localStorage = LocalStorage.get();
-        await localStorage.init(cs);
+        var localStorage = getLocalStorage();
+        await initLocalStorage(cs);
         Navigator.push(context,
             new MaterialPageRoute(builder: (context) => new SiteListPage()));
       } else {
