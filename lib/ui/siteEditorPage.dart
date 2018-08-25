@@ -43,7 +43,7 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
   }
 
   void _onSaveSite() async {
-    var localStorage = LocalStorage.get();
+    var localStorage = getLocalStorage();
     site.siteName = _siteNameController.text;
     site.siteUrl = _siteUrlController.text;
     site.siteUser = _siteUserController.text;
@@ -55,7 +55,7 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
 
   void deleteSite(){
     if(site.siteId!=null){
-      var localStorage = LocalStorage.get();
+      var localStorage = getLocalStorage();
       localStorage.deleteSite(site);
       Navigator.pop(context);
     }

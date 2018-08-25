@@ -8,31 +8,39 @@ import 'preferences.dart';
 import 'localStorage.dart';
 import 'cryptoServices.dart';
 
-String _CLOUD_BACKEND_PUSH_URL = "https://guaysinbackend1.azurewebsites.net/api/PushSites?code=8wgbzg4wovpMM9iLNgH96ApcK2YRi8nKwxj6OQag5EoHW6CwUkkVoQ==";
-String _CLOUD_BACKEND_PULL_URL = "https://guaysinbackend1.azurewebsites.net/api/GetSites?code=mCb9xgHzd6f8x83awc8aqbWlOi74y7Djyt2iIB/tyxReYkCaBoiy8w==";
+final String _CLOUD_BACKEND_PUSH_URL = "https://guaysinbackend1.azurewebsites.net/api/PushSites?code=8wgbzg4wovpMM9iLNgH96ApcK2YRi8nKwxj6OQag5EoHW6CwUkkVoQ==";
+final String _CLOUD_BACKEND_PULL_URL = "https://guaysinbackend1.azurewebsites.net/api/GetSites?code=mCb9xgHzd6f8x83awc8aqbWlOi74y7Djyt2iIB/tyxReYkCaBoiy8w==";
 
-Future<bool> exportToCloud() async {
+abstract class CloudStorage{
+  Future exportToCloud();
+  Future importFromCloud();
+}
 
-  try{
+class _CloudStorage implements CloudStorage {
 
+  final CryptoServiceConfiguration crypto;
+  final LocalStorage localStorage;
+  final Preferences preferences;
+
+  _CloudStorage(this.crypto,this.localStorage,this.preferences){
+  }
+
+  Future exportToCloud() async {
     //Query all local sites in DB
-    var allSites = await LocalStorage.get().getAllSites();
-
-    //Get crypto service
-    var crypto = getCryptoServiceInstance();
+    final allSites = await localStorage.getAllSites();
 
     //Create a JSON list
     var siteMapList = new List<Map<String,dynamic>>();
-    for(var sd in allSites) {
-      var jsonSite = await sd.toEncryptedJSON(crypto);
+    for(final sd in allSites) {
+      final jsonSite = await sd.toEncryptedJSON(crypto as CryptoServiceOperation);
       siteMapList.add(jsonSite);
     };
 
     //Get secret bundle from crypto module
-    var secret = crypto.getSecretBundle();
+    final secret = crypto.getSecretBundle();
 
     //Get user token from prefs
-    var utoken = await getUserToken();
+    final utoken = await preferences.getUserToken();
 
     //HTTP transaction with backend
     var response = await http.post(_CLOUD_BACKEND_PUSH_URL,
@@ -44,47 +52,44 @@ Future<bool> exportToCloud() async {
       return true;
     else
       return false;
+  }
 
-  }catch(ex){
-    return false;
+  Future importFromCloud() async {
+      //Get user token from prefs
+      var utoken = await preferences.getUserToken();
+
+      //HTTP transaction with backend
+      var response = await http.get(_CLOUD_BACKEND_PULL_URL,
+          headers: {'Token':utoken,'Content-Type':'application/json'});
+
+      if(response.statusCode != 200)
+        return false;
+
+      //Get secret bundle from response
+      var secretbundle = response.headers["masters"];
+      //Update local secret bundle
+      await crypto.setSecretBundle(secretbundle);
+
+      //Parse response body to get sites
+      List jsonSiteList = json.decode(response.body);
+
+      await localStorage.cleanSites();
+
+      for(var jsonSite in jsonSiteList){
+        //Save encrypted as is
+        var site = await SiteData.fromMap(jsonSite);
+        await localStorage.saveSite(site,false);
+      };
   }
 }
 
-Future<bool> importFromCloud() async {
+CloudStorage _cloudStorageInstace;
 
-  try{
+CloudStorage initCloudStorage(CryptoServiceConfiguration crypto, LocalStorage localStorage,Preferences prefs){
+  _cloudStorageInstace = new _CloudStorage(crypto,localStorage,prefs);
+  return _cloudStorageInstace;
+}
 
-    //Get user token from prefs
-    var utoken = await getUserToken();
-
-    //HTTP transaction with backend
-    var response = await http.get(_CLOUD_BACKEND_PULL_URL,
-      headers: {'Token':utoken,'Content-Type':'application/json'});
-
-    if(response.statusCode != 200)
-      return false;
-
-    //Get secret bundle from response
-    var secretbundle = response.headers["masters"];
-    //Update local secret bundle
-    var crypto = getCryptoServiceInstance();
-    await crypto.setSecretBundle(secretbundle);
-
-    //Parse response body to get sites
-    List jsonSiteList = json.decode(response.body);
-
-    var lstorage = LocalStorage.get();
-    await lstorage.cleanSites();
-
-    for(var jsonSite in jsonSiteList){
-      //Save encrypted as is
-      var site = await SiteData.fromMap(jsonSite);
-      await lstorage.saveSite(site,false);
-    };
-
-    return true;
-
-  }catch(ex){
-    return false;
-  }
+CloudStorage getCloudStorage(){
+  return _cloudStorageInstace;
 }

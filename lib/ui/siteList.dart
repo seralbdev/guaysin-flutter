@@ -7,7 +7,7 @@ import 'package:guaysin/services/localStorage.dart';
 import 'package:guaysin/services/siteData.dart';
 import 'package:guaysin/ui/loginPage.dart';
 import 'package:guaysin/ui/siteEditorPage.dart';
-import 'package:guaysin/services/cloudStorage.dart' as cloud;
+import 'package:guaysin/services/cloudStorage.dart';
 import 'package:guaysin/services/preferences.dart';
 
 enum _PageMenuOptions {
@@ -20,7 +20,7 @@ enum _PageMenuOptions {
 class SiteListPage extends StatefulWidget {
   @override
   _SiteListPageState createState() {
-    return new _SiteListPageState(getCryptoServiceInstance());
+    return new _SiteListPageState(getCryptoService());
   }
 }
 
@@ -35,7 +35,7 @@ class _SiteListPageState extends State<SiteListPage> {
   _SiteListPageState(this.crypto);
 
   void _onAddNewSite() async {
-    var localStorage = LocalStorage.get();
+    var localStorage = getLocalStorage();
     var sd = new SiteData('', '', '', '');
     //await localStorage.saveSite(sd);
     //this.setState((){});
@@ -64,7 +64,7 @@ class _SiteListPageState extends State<SiteListPage> {
   }
 
   Future<Widget> _buildSiteList() async {
-    final ls = LocalStorage.get();
+    final ls = getLocalStorage();
     var allSites = await ls.getAllSites();
     var items = new List<Widget>();
 
@@ -89,7 +89,7 @@ class _SiteListPageState extends State<SiteListPage> {
   }
 
   void exportToCloud() async {
-    var result = await cloud.exportToCloud();
+    var result = await getCloudStorage().exportToCloud();
     var msg = "Operation FAILED!!";
     if (result) msg = "Operation succeeded";
 
@@ -99,13 +99,14 @@ class _SiteListPageState extends State<SiteListPage> {
   }
 
   void importFromCloud() async {
-    var result = await cloud.importFromCloud();
-    setGenerateKeyFlag(true);
+    final cloudStorage = getCloudStorage();
+    var result = await cloudStorage.importFromCloud();
     if (!result) {
       _scaffoldKey.currentState.showSnackBar(new SnackBar(
         content: new Text("Operation FAILED!"),
       ));
     } else {
+      crypto.resetKey();
       Navigator.push(
         context,
         new MaterialPageRoute(builder: (context) => new LoginPage()),
@@ -115,7 +116,7 @@ class _SiteListPageState extends State<SiteListPage> {
 
   void exportToFile() async {
     try {
-      var localStorage = LocalStorage.get();
+      var localStorage = getLocalStorage();
       await localStorage.exportDataToFile();
       _scaffoldKey.currentState.showSnackBar(new SnackBar(
         content: new Text("Operation SUCCEEDED!"),
@@ -129,7 +130,7 @@ class _SiteListPageState extends State<SiteListPage> {
 
   void importFromFile() async {
     try {
-      var localStorage = LocalStorage.get();
+      var localStorage = getLocalStorage();
       await localStorage.importDataFromFile();
 
       Navigator.push(

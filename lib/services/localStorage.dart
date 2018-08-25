@@ -9,37 +9,21 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:guaysin/services/siteData.dart';
 
-class LocalStorage {
-  static final LocalStorage _localStorageInstance = new LocalStorage._internal();
+abstract class LocalStorage{
+  Future<SiteData> saveSite(SiteData site,bool encrypt);
+  Future deleteSite(SiteData site);
+  Future cleanSites();
+  Future<List<SiteData>> getAllSites();
+  Future exportDataToFile();
+  Future importDataFromFile();
+}
 
-  Database db;
-  CryptoServiceOperation _crypto;
+class _LocalStorage implements LocalStorage {
 
-  static LocalStorage get() {
-    return _localStorageInstance;
-  }
+  final Database db;
+  final CryptoServiceOperation crypto;
 
-  LocalStorage._internal();
-
-
-  Future init(CryptoServiceOperation crypto) async {
-    this._crypto = crypto;
-    Directory documentsDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentsDirectory.path, "guaysin.db");
-    db = await openDatabase(path, version: 1,
-      onCreate: (Database db, int version) async {
-        // When creating the db, create the table
-        await db.execute(
-            "CREATE TABLE Sites ("
-                "SiteId INTEGER PRIMARY KEY,"
-                "SiteName TEXT,"
-                "SiteUrl TEXT,"
-                "SiteUser TEXT,"
-                "SitePassword TEXT,"
-                "TimeStamp INTEGER"
-                ")");
-      });
-  }
+  _LocalStorage(this.crypto,this.db) {}
 
   Future<SiteData> saveSite(SiteData site,bool encrypt) async {
     SiteData esite;
@@ -48,14 +32,14 @@ class LocalStorage {
     if(site.siteId==null){
       sentence = 'INSERT INTO Sites (SiteName, SiteUrl, SiteUser, SitePassword, TimeStamp) VALUES (?,?,?,?,?);';
       if(encrypt)
-        esite = await site.encrypt(_crypto);
+        esite = await site.encrypt(crypto);
       else
         esite = site;
       esite.siteId = await db.rawInsert(sentence,[esite.siteName,esite.siteUrl,esite.siteUser,esite.sitePassword,ts]);
     }else{
       sentence = 'UPDATE Sites SET SiteName=?,SiteUrl=?,SiteUser=?,SitePassword=?,TimeStamp=? WHERE SiteId=?;';
       if(encrypt)
-        esite = await site.encrypt(_crypto);
+        esite = await site.encrypt(crypto);
       else
         esite = site;
       esite.siteId = await db.rawUpdate(sentence,[esite.siteName,esite.siteUrl,esite.siteUser,esite.sitePassword,ts,esite.siteId]);
@@ -77,7 +61,7 @@ class LocalStorage {
     List<Map> eml = await db.rawQuery('SELECT * FROM Sites');
     var sites = new List<SiteData>();
     for(var m in eml) {
-      final site = await SiteData.fromEncryptedMap(m,_crypto);
+      final site = await SiteData.fromEncryptedMap(m,crypto);
       sites.add(site);
     }
     return sites;
@@ -129,4 +113,30 @@ class LocalStorage {
 
   }
 
+}
+
+LocalStorage _localStorageInstace;
+
+Future<LocalStorage> initLocalStorage(CryptoServiceOperation crypto) async {
+  Directory documentsDirectory = await getApplicationDocumentsDirectory();
+  String path = join(documentsDirectory.path, "guaysin.db");
+  final db = await openDatabase(path, version: 1,
+      onCreate: (Database db, int version) async {
+        // When creating the db, create the table
+        await db.execute(
+            "CREATE TABLE Sites ("
+                "SiteId INTEGER PRIMARY KEY,"
+                "SiteName TEXT,"
+                "SiteUrl TEXT,"
+                "SiteUser TEXT,"
+                "SitePassword TEXT,"
+                "TimeStamp INTEGER"
+                ")");
+      });
+  _localStorageInstace = new _LocalStorage(crypto,db);
+  return _localStorageInstace;
+}
+
+LocalStorage getLocalStorage(){
+  return _localStorageInstace;
 }
