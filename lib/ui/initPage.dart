@@ -3,11 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:guaysin/services/cryptoServices.dart';
-import 'package:guaysin/ui/loginPage.dart';
-import 'package:guaysin/ui/siteList.dart';
-import 'package:guaysin/services/localStorage.dart';
 import 'package:guaysin/services/preferences.dart';
-import 'package:local_auth/local_auth.dart';
+import 'package:guaysin/ui/loginPage.dart';
 
 class InitPage extends StatefulWidget {
   @override
@@ -24,11 +21,6 @@ class _InitPageState extends State<InitPage> {
   @override
   void initState() {
     super.initState();
-
-    /*getCryptoServiceInstance().secretReady().then((flag) {
-      setState(() {
-        _secretReady = flag;
-      });*/
   }
 
   void _showErrorMessage(String msg) {
@@ -42,7 +34,7 @@ class _InitPageState extends State<InitPage> {
       form.save();
       try {
         await _initializeApp();
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           new MaterialPageRoute(builder: (context) => new LoginPage()),
         );
@@ -53,9 +45,11 @@ class _InitPageState extends State<InitPage> {
   }
 
   Future _initializeApp() async {
-    var cs = getCryptoServiceInstance();
+    final cs = getCryptoService();
     await cs.createSecret(_password);
-    await setUserToken(_token);
+    final pref = getPreferences();
+    await pref.setUserToken(_token);
+    await pref.setInitDoneFlag();
   }
 
   @override
@@ -63,7 +57,7 @@ class _InitPageState extends State<InitPage> {
     return new Scaffold(
         key: scaffoldKey,
         appBar: new AppBar(
-            title: new Text('Login page'), automaticallyImplyLeading: false),
+            title: new Text('First time setup'), automaticallyImplyLeading: false),
         body: new Padding(
             padding: const EdgeInsets.all(16.0),
             child: new Form(

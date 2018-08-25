@@ -17,7 +17,6 @@ class _LoginPageState extends State<LoginPage> {
   final scaffoldKey = new GlobalKey<ScaffoldState>();
   final formKey = new GlobalKey<FormState>();
 
-  bool _secretReady;
   String _password;
   String _token;
 
@@ -25,11 +24,11 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
 
-    getCryptoService().secretReady().then((flag) {
+    /*getCryptoService().secretReady().then((flag) {
       setState(() {
         _secretReady = flag;
       });
-    });
+    });*/
   }
 
   void _showErrorMessage(String msg) {
@@ -43,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
       form.save();
       var res = await _performLogin();
       if (res) {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           new MaterialPageRoute(builder: (context) => new SiteListPage()),
         );
@@ -58,12 +57,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       //Handle secret
       cs = getCryptoService();
-      if (_secretReady) {
-        if (!await cs.unblockSecret(_password)) return false;
-      } else {
-        await cs.createSecret(_password);
-        await getPreferences().setUserToken(_token);
-      }
+      if (!await cs.unblockSecret(_password)) return false;
     } catch (e) {
       _showErrorMessage("Problem handling password");
       return false;
@@ -82,12 +76,11 @@ class _LoginPageState extends State<LoginPage> {
 
   void _fingerPrintLogin() async {
     try {
-
       var localAuth = new LocalAuthentication();
       bool didAuthenticate = await localAuth.authenticateWithBiometrics(
           localizedReason: 'Please authenticate');
 
-      if(!didAuthenticate){
+      if (!didAuthenticate) {
         return;
       }
 
@@ -96,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
       if (await cs.unblockKey()) {
         var localStorage = getLocalStorage();
         await initLocalStorage(cs);
-        Navigator.push(context,
+        Navigator.pushReplacement(context,
             new MaterialPageRoute(builder: (context) => new SiteListPage()));
       } else {
         _showErrorMessage("Problem unblocking key");
@@ -125,40 +118,17 @@ class _LoginPageState extends State<LoginPage> {
                     onSaved: (val) => _password = val,
                     obscureText: true,
                   ),
-                  !_secretReady
-                      ? new Column(children: <Widget>[
-                          new TextFormField(
-                              decoration: new InputDecoration(
-                                  labelText: 'Introduce PASSWORD again...'),
-                              validator: (val) =>
-                                  val.length < 6 ? 'Password too short.' : null,
-                              onSaved: (val) => _password = val,
-                              obscureText: true),
-                          new TextFormField(
-                            decoration: new InputDecoration(
-                                labelText: 'Introduce TOKEN here...'),
-                            validator: (val) =>
-                                val.isEmpty ? 'Must have a value' : null,
-                            onSaved: (val) => _token = val,
-                          ),
-                          new Container(
-                              margin: const EdgeInsets.all(30.0),
-                              child: new RaisedButton(
-                                  onPressed: _submit,
-                                  child: new Text('Start')))
-                        ])
-                      : new Column(children: <Widget>[
-                          new Container(
-                              margin: const EdgeInsets.all(30.0),
-                              child: new RaisedButton(
-                                  onPressed: _submit,
-                                  child: new Text('Login'))),
-                          new Container(
-                              margin: const EdgeInsets.all(60.0),
-                              child: new RaisedButton(
-                                  onPressed: _fingerPrintLogin,
-                                  child: new Icon(Icons.fingerprint)))
-                        ])
+                  new Column(children: <Widget>[
+                    new Container(
+                        margin: const EdgeInsets.all(30.0),
+                        child: new RaisedButton(
+                            onPressed: _submit, child: new Text('Login'))),
+                    new Container(
+                        margin: const EdgeInsets.all(60.0),
+                        child: new RaisedButton(
+                            onPressed: _fingerPrintLogin,
+                            child: new Icon(Icons.fingerprint)))
+                  ])
                 ]))));
   }
 }

@@ -1,10 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:guaysin/ui/initPage.dart';
 import 'package:guaysin/ui/loginPage.dart';
+import 'package:guaysin/services/preferences.dart';
 
-void main() => runApp(new MyApp());
+void main() async {
+
+  final appInitFlag = await getPreferences().getInitDoneFlag();
+
+  runApp(new MyApp(!appInitFlag));
+}
 
 class MyApp extends StatelessWidget {
+  bool firstTimeFlag;
+
   // This widget is the root of your application.
+
+  MyApp(bool this.firstTimeFlag){
+  }
+
+  Widget _getHomePage(){
+    if(firstTimeFlag)
+      return new InitPage();
+    return new LoginPage();
+  }
+
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
@@ -20,7 +39,7 @@ class MyApp extends StatelessWidget {
         // counter didn't reset back to zero; the application is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: new LoginPage(),
+      home:_getHomePage(),
     );
   }
 }
