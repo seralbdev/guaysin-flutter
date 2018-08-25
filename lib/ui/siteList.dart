@@ -100,17 +100,16 @@ class _SiteListPageState extends State<SiteListPage> {
 
   void importFromCloud() async {
     final cloudStorage = getCloudStorage();
-    var result = await cloudStorage.importFromCloud();
-    if (!result) {
-      _scaffoldKey.currentState.showSnackBar(new SnackBar(
-        content: new Text("Operation FAILED!"),
-      ));
-    } else {
+    try {
+      await cloudStorage.importFromCloud();
       crypto.resetKey();
       Navigator.push(
         context,
         new MaterialPageRoute(builder: (context) => new LoginPage()),
       );
+    } catch (ex) {
+      _scaffoldKey.currentState
+          .showSnackBar(new SnackBar(content: new Text(ex)));
     }
   }
 
@@ -190,7 +189,7 @@ class _SiteListPageState extends State<SiteListPage> {
             ]);
 
             //snapshot.data
-          }else if(!snapshot.hasData){
+          } else if (!snapshot.hasData) {
             return new Center(child: new CircularProgressIndicator());
           }
           return new Container();
