@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:guaysin/ui/initPage.dart';
 import 'package:guaysin/ui/loginPage.dart';
 import 'package:guaysin/services/preferences.dart';
+import 'package:guaysin/services/localStorage.dart';
+import 'package:guaysin/services/cryptoServices.dart';
+import 'package:guaysin/services/cloudStorage.dart';
 
 void main() async {
 
-  final appInitFlag = await getPreferences().getInitDoneFlag();
+  //App module initialization
+  await initLocalStorage(getCryptoService());
+  initCloudStorage(getCryptoService(), getLocalStorage(), getPreferences());
 
+  //Launch app
+  final appInitFlag = await getPreferences().getInitDoneFlag();
   runApp(new MyApp(!appInitFlag));
 }
 
