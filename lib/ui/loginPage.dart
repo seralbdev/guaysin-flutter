@@ -86,14 +86,12 @@ class _LoginPageState extends State<LoginPage> {
 
       //Handle secret
       final cs = getCryptoService();
-      if (await cs.unblockKey()) {
-        var localStorage = getLocalStorage();
-        await initLocalStorage(cs);
-        Navigator.pushReplacement(context,
-            new MaterialPageRoute(builder: (context) => new SiteListPage()));
-      } else {
-        _showErrorMessage("Problem unblocking key");
-      }
+      await cs.unblockKey();
+      var localStorage = getLocalStorage();
+      await initLocalStorage(cs);
+      Navigator.pushReplacement(context,
+          new MaterialPageRoute(builder: (context) => new SiteListPage()));
+
     } catch (e) {
       _showErrorMessage("Generic error");
     }

@@ -89,13 +89,15 @@ class _SiteListPageState extends State<SiteListPage> {
   }
 
   void exportToCloud() async {
-    var result = await getCloudStorage().exportToCloud();
-    var msg = "Operation FAILED!!";
-    if (result) msg = "Operation succeeded";
 
-    _scaffoldKey.currentState.showSnackBar(new SnackBar(
-      content: new Text(msg),
-    ));
+    try{
+      await getCloudStorage().exportToCloud();
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+        content: new Text("Operation succeeded") ));
+    }catch(ex){
+      _scaffoldKey.currentState.showSnackBar(new SnackBar(
+      content: new Text(ex.toString()) ));
+    }
   }
 
   void importFromCloud() async {
@@ -122,7 +124,7 @@ class _SiteListPageState extends State<SiteListPage> {
       ));
     } catch (ex) {
       _scaffoldKey.currentState.showSnackBar(new SnackBar(
-        content: new Text("Operation FAILED!"),
+        content: new Text(ex.toString()),
       ));
     }
   }

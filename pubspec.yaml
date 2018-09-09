@@ -4,7 +4,7 @@ description: Guaysin V2
 dependencies:
   flutter:
     sdk: flutter
-  shared_preferences: "^0.4.1"
+  shared_preferences: "^0.4.2"
   flutter_string_encryption: "^0.0.2"
   flutter_secure_storage: "^3.0.0"
   sqflite: "^0.8.9"

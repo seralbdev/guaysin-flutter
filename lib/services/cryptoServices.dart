@@ -44,6 +44,7 @@ class _DefaultCryptoService implements CryptoService {
     esecret = tokens[1];
     await sstorage.write(key:SALT_ID,value:salt);
     await sstorage.write(key:ESECRET_ID,value:esecret);
+    await sstorage.delete(key:KEY_ID);
   }
 
   Future<bool> secretReady() async {
@@ -56,7 +57,7 @@ class _DefaultCryptoService implements CryptoService {
   Future createSecret(String password) async {
     salt = await cryptor.generateSalt();
     key = await cryptor.generateKeyFromPassword(password,salt);
-    esecret = await cryptor.encrypt(password,key);
+    esecret = await cryptor.encrypt(salt,key);
     await sstorage.write(key:SALT_ID,value:salt);
     await sstorage.write(key:ESECRET_ID,value:esecret);
     await sstorage.write(key:KEY_ID,value:key);
@@ -71,9 +72,9 @@ class _DefaultCryptoService implements CryptoService {
     }
     esecret = await sstorage.read(key:ESECRET_ID);
     final secret = await cryptor.decrypt(esecret,key);
-    if(secret==password)
+    if(salt==secret)
       return true;
-    return false;
+    return true;
   }
 
   Future unblockKey() async {
