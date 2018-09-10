@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:guaysin/services/localStorage.dart';
 import 'package:guaysin/services/siteData.dart';
@@ -48,21 +49,26 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
     site.siteUrl = _siteUrlController.text;
     site.siteUser = _siteUserController.text;
     site.sitePassword = _sitePwdController.text;
-    await localStorage.saveSite(site,true);
+    await localStorage.saveSite(site, true);
     //this.setState((){});
     Navigator.pop(context);
   }
 
-  void deleteSite(){
-    if(site.siteId!=null){
+  void onCopyPassword(){
+    final cd = new ClipboardData(text:_sitePwdController.text);
+    Clipboard.setData(cd);
+  }
+
+  void deleteSite() {
+    if (site.siteId != null) {
       var localStorage = getLocalStorage();
       localStorage.deleteSite(site);
       Navigator.pop(context);
     }
   }
 
-  void popupMenuSelected(PageMenuOptions valueSelected){
-    switch(valueSelected){
+  void popupMenuSelected(PageMenuOptions valueSelected) {
+    switch (valueSelected) {
       case PageMenuOptions.DELETE:
         deleteSite();
     }
@@ -70,7 +76,7 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
 
   @override
   void initState() {
-    if(site!=null) {
+    if (site != null) {
       _siteNameController.text = site.siteName;
       _siteUrlController.text = site.siteUrl;
       _siteUserController.text = site.siteUser;
@@ -85,18 +91,17 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
     final DateTime today = new DateTime.now();
 
     return new Scaffold(
-        appBar: new AppBar(title: const Text('Edit Site'),
-        actions: <Widget>[
+        appBar: new AppBar(title: const Text('Edit Site'), actions: <Widget>[
           // overflow menu
           PopupMenuButton<PageMenuOptions>(
-            onSelected: popupMenuSelected,
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<PageMenuOptions>>[
-              const PopupMenuItem<PageMenuOptions>(
-                value: PageMenuOptions.DELETE,
-                child: const Text('Delete'),
-              ),
-            ]
-          ),
+              onSelected: popupMenuSelected,
+              itemBuilder: (BuildContext context) =>
+                  <PopupMenuEntry<PageMenuOptions>>[
+                    const PopupMenuItem<PageMenuOptions>(
+                      value: PageMenuOptions.DELETE,
+                      child: const Text('Delete'),
+                    ),
+                  ]),
         ]),
         body: new Form(
             key: _formKey,
@@ -107,7 +112,8 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
               children: <Widget>[
                 new Container(
                   child: new TextField(
-                    decoration: const InputDecoration(labelText: "Site Name", hintText: "Site name?"),
+                    decoration: const InputDecoration(
+                        labelText: "Site Name", hintText: "Site name?"),
                     autocorrect: false,
                     controller: _siteNameController,
                     //onChanged: (String value) {
@@ -117,7 +123,8 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
                 ),
                 new Container(
                   child: new TextField(
-                    decoration: const InputDecoration(labelText: "Site URL", hintText: "Site url?"),
+                    decoration: const InputDecoration(
+                        labelText: "Site URL", hintText: "Site url?"),
                     autocorrect: false,
                     controller: _siteUrlController,
                     //onChanged: (String value) {
@@ -127,7 +134,8 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
                 ),
                 new Container(
                   child: new TextField(
-                    decoration: const InputDecoration(labelText: "Site User", hintText: "Site user?"),
+                    decoration: const InputDecoration(
+                        labelText: "Site User", hintText: "Site user?"),
                     autocorrect: false,
                     controller: _siteUserController,
                     //onChanged: (String value) {
@@ -136,22 +144,30 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
                   ),
                 ),
                 new Container(
-                  child: new TextField(
-                    decoration: const InputDecoration(labelText: "Site password", hintText: "Site password?"),
+                    child: new Row(children: <Widget>[
+                      new Flexible(
+
+                  child:new TextField(
+                    decoration: const InputDecoration(
+                        labelText: "Site password", hintText: "Site password?"),
                     autocorrect: false,
                     controller: _sitePwdController,
                     //onChanged: (String value) {
                     //  _sitePwdController.text = value;
                     //},
-                  ),
-                ),
+                  )),
+                  new MaterialButton(
+                    minWidth:10.0,
+                    color: const Color(0xFFe0e0e0),
+                    child: new Icon(Icons.content_copy),
+                    onPressed: onCopyPassword,
+                  )
+                ])),
               ],
             )),
-            floatingActionButton: new FloatingActionButton(
-                onPressed: _onSaveSite,
-                tooltip: 'Save changes',
-                child: new Icon(Icons.save)
-            ));
+        floatingActionButton: new FloatingActionButton(
+            onPressed: _onSaveSite,
+            tooltip: 'Save changes',
+            child: new Icon(Icons.save)));
   }
-
 }
