@@ -69,7 +69,7 @@ class _SiteListPageState extends State<SiteListPage> {
     var items = new List<Widget>();
 
     allSites.forEach((sd) {
-      if (regexp.hasMatch(sd.siteName)) {
+      if (regexp.hasMatch(sd.siteName.toLowerCase())) {
         var lt = _buildListItem(sd);
         items.add(lt);
       }
@@ -84,7 +84,13 @@ class _SiteListPageState extends State<SiteListPage> {
   }
 
   void onFilter() {
-    regexp = new RegExp(_filterController.text);
+    regexp = new RegExp(_filterController.text.toLowerCase());
+    this.setState(() {});
+  }
+
+  void onClearFilter(){
+    _filterController.text = "";
+    regexp = new RegExp("");
     this.setState(() {});
   }
 
@@ -170,8 +176,9 @@ class _SiteListPageState extends State<SiteListPage> {
           if (snapshot.hasData && snapshot.data != null) {
             return new Column(children: <Widget>[
               new Row(children: <Widget>[
-                new RaisedButton(
+                new MaterialButton(
                     key: null,
+                    minWidth: 10.0,
                     onPressed: onFilter,
                     color: const Color(0xFFe0e0e0),
                     child: new Icon(Icons.search)),
@@ -185,7 +192,13 @@ class _SiteListPageState extends State<SiteListPage> {
                                 color: Colors.black,
                                 fontWeight: FontWeight.normal)
                             //fontFamily: "Roboto"),
-                            )))
+                            ))),
+                new MaterialButton(
+                  minWidth:10.0,
+                  color: const Color(0xFFe0e0e0),
+                  child: new Icon(Icons.clear),
+                  onPressed:onClearFilter,
+                )
               ]),
               new Expanded(child: snapshot.data)
             ]);
