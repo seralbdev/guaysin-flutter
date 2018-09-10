@@ -198,7 +198,7 @@ class _SiteListPageState extends State<SiteListPage> {
                   color: const Color(0xFFe0e0e0),
                   child: new Icon(Icons.clear),
                   onPressed:onClearFilter,
-                )
+                ),
               ]),
               new Expanded(child: snapshot.data)
             ]);

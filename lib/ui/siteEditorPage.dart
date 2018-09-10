@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:guaysin/services/localStorage.dart';
 import 'package:guaysin/services/siteData.dart';
+import 'package:guaysin/services/random.dart' as random;
 
 enum PageMenuOptions { DELETE }
 
@@ -57,6 +58,11 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
   void onCopyPassword(){
     final cd = new ClipboardData(text:_sitePwdController.text);
     Clipboard.setData(cd);
+  }
+
+  void onGeneratePassword(){
+    final randpwd = random.randomString(10);
+    _sitePwdController.text = randpwd;
   }
 
   void deleteSite() {
@@ -144,6 +150,7 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
                   ),
                 ),
                 new Container(
+                  padding: new EdgeInsets.all(5.0),
                     child: new Row(children: <Widget>[
                       new Flexible(
 
@@ -161,6 +168,12 @@ class _SiteEditorPageState extends State<SiteEditorPage> {
                     color: const Color(0xFFe0e0e0),
                     child: new Icon(Icons.content_copy),
                     onPressed: onCopyPassword,
+                  ),
+                  new MaterialButton(
+                    minWidth:10.0,
+                    color: const Color(0xFFe0e0e0),
+                    child: new Icon(Icons.autorenew),
+                    onPressed: onGeneratePassword,
                   )
                 ])),
               ],
